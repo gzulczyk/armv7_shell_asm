@@ -9,3 +9,6 @@ No libs, just raw syscalls.
 - **`display.s`** – prints shell prompt via `sys_write`
 - **`read.s`** – reads user input into buffer via `sys_read`
 - **`execute.s`** – forks child, runs `execve`, and waits via `wait4`
+
+## Useful resources
+[ARM 32-bit EABI syscalls](https://chromium.googlesource.com/chromiumos/docs/+/master/constants/syscalls.md#arm-32_bit_EABI)
