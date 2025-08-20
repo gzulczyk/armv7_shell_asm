@@ -11,6 +11,9 @@ main:
     b main            @ switch again to the begining of main
 
 display_prompt: 
-    push { lr }
-    ldr r0, =prompt 
-    bl print_string
+    push {lr} @ save the point of main func
+    ldr r0, =prompt  @ load in r0 register address of "X "
+    bl print_string @ switch to the print_string function
+    pop {pc} @ go back to the main func via using the lr saved in the beginning in that declared func
+
+print_string:
