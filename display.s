@@ -1,9 +1,11 @@
-.section .text @ we want execute that code, so we have to use the text section, not data, etc
-.global _start @ declaration of program start point
-
+.section .data @ data section for variables and static data
 prompt: .asciz "X " @ declaration of ascii sign of our shell, i decied to make anothar than Ed from LLTV and i use X instead of dolar sign :) 
 
-_start:
+.section .text @ code section, place where instructions go
+.global _start @ declaration of program start point
+
+
+_start: 
     bl main @ switch to the main function, _start is the start point of whole program
 
 main:
