@@ -1,14 +1,9 @@
-.section .text @ we want execute that code, so we have to use the text section, not data, etc
-.global _start @ declaration of program start point
-
+.section .data @ data section for variables and static data
 prompt: .asciz "X " @ declaration of ascii sign of our shell, i decied to make anothar than Ed from LLTV and i use X instead of dolar sign :) 
 
-_start:
-    bl main @ switch to the main function, _start is the start point of whole program
-
-main:
-    bl display_prompt @ switch to display_prompt function
-    b main            @ switch again to the begining of main
+.section .text @ code section, place where instructions go
+.global display_prompt @ declaration of program start point
+.global print_string
 
 display_prompt: 
     push {lr} @ save the point of main func
@@ -33,5 +28,6 @@ _end_print:
     mov r0, #1 @ because stdout = 1, more at https://man7.org/linux/man-pages/man3/stdin.3.html
     svc #0 @ execution of system call
     pop {pc} @ return to display_prompt
+
 
 @ this whole process shows how to print "X ", if you go from the top to the bottom, that instructions gonna literally output "X " once, but if someone didnt stop, this thing gonna be execudet indefinitely
