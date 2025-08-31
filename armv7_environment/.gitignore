@@ -1,0 +1,5 @@
+*.iso
+*.qcow2
+*.gz
+vmlinuz
+alpine*
