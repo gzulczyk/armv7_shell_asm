@@ -28,6 +28,8 @@ check_terminate:
    beq do_exit
    cmp r2, #9
    beq do_exit
+   cmp r2, #10
+   beq do_exit
    cmp r2, #13
    beq do_exit
    b not_match
