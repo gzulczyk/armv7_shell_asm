@@ -17,5 +17,12 @@ main:
     ldr r0, =buffer
     bl strip_newline
     bl check_terminate
+    cmp r0, #1
+    beq exit_shell
     bl fork_process
     b main
+
+exit_shell:
+    mov r7, #1
+    mov r0, #0
+    svc #0

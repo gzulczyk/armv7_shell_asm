@@ -25,8 +25,6 @@ fork_process:
 
 child_process: 
     push {r7, lr}
-    ldr r0, =buffer
-    bl strip_newline
     ldr r0, =prefix
     ldr r1, =buffer
     ldr r2, =path 
@@ -39,7 +37,7 @@ child_process:
     svc #0
     bl not_found
     mov r7, #1
-    mov r7, #127 @syscall to exit if something goes wrong
+    mov r0, #127 @syscall to exit if something goes wrong
     svc #0
 
 parent_process:
