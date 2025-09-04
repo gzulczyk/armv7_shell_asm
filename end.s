@@ -42,5 +42,5 @@ do_exit:
     pop {r4, r7,pc}             @ return back the r4, r7 and pc values
 
 not_match:
-    mov r0, #0
+    mov r0, #0                  @ signal not_match return 
     pop {r4,r7, pc}             @ return back the r4, r7 and pc values

@@ -1,45 +1,45 @@
-.section .text
-.global strip_newline
-.global concat_strings
+.section .text          @ code section
+.global strip_newline   @ function "strip_newline" globally available
+.global concat_strings  @ function "concat_strings" globally available
 
 strip_newline:
-    push {r1-r2, lr}
+    push {r1-r2, lr}    @ keep r1, r2 register and link register
 loop:
-    ldrb r1, [r0], #1
-    cmp r1, #0
-    beq done
-    cmp r1, #10
-    bne loop
-    mov r2, #0
-    strb r2, [r0, #-1]
+    ldrb r1, [r0], #1   @ load byte from r0, keep it in r1 and advance it by +1
+    cmp r1, #0          @ compare does register r0 has null-terminator inside (0x00)
+    beq done            @ if so, strip is complete, go to the `done` section
+    cmp r1, #10         @ compare does register r1 has newline sign
+    bne loop            @ if not equal, keep loop
+    mov r2, #0          @ if so, set r2 as 0x00
+    strb r2, [r0, #-1]  @ write the byte to the r2 register with r0 value, change pointer to -1
 done:
-    pop {r1-r2, pc}
+    pop {r1-r2, pc}     @ return r1,r2, pc back 
 
 
 concat_strings:
-    push {r4-r7, lr}
-    mov r5, r2
+    push {r4-r7, lr}    @ keep r4-r7 registers and link register
+    mov r5, r2          @ set r2 value into r5 register
 
 @ --- copy prefix "/bin" ---    
-1:  ldrb r4, [r0], #1
-    cmp r4, #0
-    beq 2f
-    strb r4, [r5], #1
-    b 1b
+1:  ldrb r4, [r0], #1   @ load byte from r0, keep it in 42 and advance it by +1
+    cmp r4, #0          @ compare does r4 has null-terminator inside
+    beq 2f              @ if so, go to 2: section
+    strb r4, [r5], #1   @ if not, write the r5 value inside and before that go back by -1 
+    b 1b                @ go to the beginning
 
 @ --- copy declared command from buffer ---
-2: ldrb r4, [r1], #1
-   cmp r4, #0
-   beq cmd_done
-   cmp r4, #' '
-   beq cmd_done
-   strb r4, [r5], #1
-   b 2b
+2: ldrb r4, [r1], #1    @ load byte from r1, keep it in r4 and advance it by +1
+   cmp r4, #0           @ compare does r4 has null-terminator inside
+   beq cmd_done         @ if so, command is created properly, go to the `cmd_done` section
+   cmp r4, #' '         @ if not, compare does r4 has whitespace inside 
+   beq cmd_done         @ if so, command is created properly, go to the `cmd_done` section
+   strb r4, [r5], #1    @ load byte from r5, keep it in r4 and advance it by +1
+   b 2b                 @ go to the 2: section
 
 cmd_done:
-    mov r4, #0
-    strb r4, [r5]
-    str r2, [r3], #4
+    mov r4, #0          @ set 0x00 value inside r4 register
+    strb r4, [r5]       @ store the r5 address inside r4 register
+    str r2, [r3], #4    @ 
 
 @ --- copy arguments from command to put it in argv because of execve logic ---
 parse_args:

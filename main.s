@@ -1,4 +1,4 @@
-.section .text
+.section .text @ code section
 .global _start 
 .extern display_prompt
 .extern read_input
