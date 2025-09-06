@@ -1,4 +1,4 @@
-.section .data                  @ data section, place where define static things
+.section .data                  @ data section for variables and static data
 .global buffer                  @ make `buffer` space globally available
 .global path                    @ make `path` space globally available
 .global argv                    @ make `argv` space globally available

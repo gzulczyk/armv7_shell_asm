@@ -6,7 +6,6 @@
 .extern strip_newline           @ uses the `strip_newline` defined elsewhere in the program 
 .extern check_terminate         @ uses the `check_terminate` defined elsewhere in the program
 .extern buffer                  @ uses buffer defined elsewhere in the program
-.extern not_found               @ uses the `not_found` defined elsewhere in the program
 
 _start:
     bl main                     @ go to the main function
