@@ -1,9 +1,9 @@
-#!/usr/bin/env bash
-set -e
-#check does client has all supported programs to execute that sh, even wget, etc
-#try to boot installer with auto configuration file
+#!/bin/bash
+set -e # Stop when one step doesn't finish properly
+
 ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/armv7/alpine-standard-3.22.1-armv7.iso"
-ISO_FILE="alpine.iso" #include md5 verification
+ISO_FILE="alpine.iso"
+ISO_MD5="0cba2a7ba4ce8c1c84fd626071ae6fe4"
 
 DISK_IMAGE="alpine.qcow2"
 KERNEL="vmlinuz"
@@ -11,6 +11,16 @@ INITRD="initrd.gz"
 
 DISK_SIZE="2G"
 QEMU_ARCH="${QEMU_ARCH:-}"
+
+REQUIRED_CMDS=("wget" "md5" "7z" "mv" "cat" "chmod")
+
+echo "Checking required tools..."
+for cmd in "${REQUIRED_CMDS[@]}"; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        echo "Error: $cmd is not installed or not in PATH, try to install it via proper Package Manager in your OS!"
+        exit 1
+    fi
+done
 
 if [ -z "$QEMU_ARCH" ]; then
     if command -v qemu-system-arm > /dev/null 2>&1; then
@@ -31,6 +41,14 @@ else
     echo "ISO already exists, skipping download."
 fi
 
+CALC_MD5=$(md5 -q "$ISO_FILE")
+
+if [ "$CALC_MD5" != "$ISO_MD5" ]; then
+    echo "Mismatch, MD5 of declared ISO doesn't match!"
+else
+    echo "MD5 is correct"
+fi
+
 if [ ! -f "${DISK_IMAGE}" ]; then
     echo "Creating disk image ${DISK_IMAGE}..."
     qemu-img create -f qcow2 "${DISK_IMAGE}" "${DISK_SIZE}"
@@ -47,7 +65,7 @@ else
     echo "vmlinuz & initrd already extracted."
 fi
 
-cat > run-install.sh <<EOF
+cat > alpine-install.sh <<EOF
 #!/usr/bin/env bash
 ${QEMU_ARCH} \
   -M virt \
@@ -55,7 +73,7 @@ ${QEMU_ARCH} \
   -m 1024 \
   -kernel ${KERNEL} \
   -initrd ${INITRD} \
-  -append "console=ttyAMA0 root=/dev/vda3 rootfstype=ext4 rw" \
+  -append "console=ttyAMA0" \
   -drive file=${DISK_IMAGE},if=none,format=qcow2,id=hd0 \
   -device virtio-blk-device,drive=hd0 \
   -drive file=${ISO_FILE},if=none,format=raw,id=cdrom \
@@ -64,7 +82,7 @@ ${QEMU_ARCH} \
   -device virtio-net-device,netdev=net0 \
   -nographic
 EOF
-chmod +x run-install.sh
+chmod +x alpine-install.sh
 
 cat > run.sh <<EOF
 #!/usr/bin/env bash
@@ -84,6 +102,8 @@ EOF
 chmod +x run.sh
 
 echo
-echo "Setup complete!"
-echo "Run './run-install.sh' to start installation."
+echo "Basic configuration complete, right now, we're trying to install OS via qemu..."
 echo "After installing Alpine to the disk, use './run.sh' to boot from disk."
+sleep 5
+./alpine-install.sh #try to boot installer with auto configuration file
+
