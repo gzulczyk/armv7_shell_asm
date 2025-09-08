@@ -73,7 +73,7 @@ ${QEMU_ARCH} \
   -m 1024 \
   -kernel ${KERNEL} \
   -initrd ${INITRD} \
-  -append "console=ttyAMA0" \
+  -append "console=ttyAMA0 autoinstall=cdrom:/preseed.txt" \
   -drive file=${DISK_IMAGE},if=none,format=qcow2,id=hd0 \
   -device virtio-blk-device,drive=hd0 \
   -drive file=${ISO_FILE},if=none,format=raw,id=cdrom \
@@ -103,7 +103,14 @@ chmod +x run.sh
 
 echo
 echo "Basic configuration complete, right now, we're trying to install OS via qemu..."
+echo
+echo "################################################################################"
+echo
 echo "After installing Alpine to the disk, use './run.sh' to boot from disk."
+echo
+echo "################################################################################"
+echo
+
 sleep 5
 ./alpine-install.sh #try to boot installer with auto configuration file
 
