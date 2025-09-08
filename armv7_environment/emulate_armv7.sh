@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e # Stop when one step doesn't finish properly
 
-ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/armv7/alpine-standard-3.22.1-armv7.iso"
+ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/armv7/alpine-standard-3.22.1-armv7.iso" || "https://web.archive.org/web/20250823194237/https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/armv7/alpine-standard-3.22.1-armv7.iso"
 ISO_FILE="alpine.iso"
 ISO_MD5="0cba2a7ba4ce8c1c84fd626071ae6fe4"
 
