@@ -54,7 +54,8 @@ fi
 CALC_MD5=$(md5 -q "$ISO_FILE")
 
 if [ "$CALC_MD5" != "$ISO_MD5" ]; then
-    echo "Mismatch, MD5 of declared ISO doesn't match!"
+    echo "Mismatch, MD5 of downloaded ISO doesn't match!"
+    return false
 else
     echo "MD5 is correct"
 fi
@@ -112,7 +113,11 @@ EOF
 chmod +x run.sh
 
 echo
+echo "################################################################################"
+echo
 echo "Basic configuration complete, right now, we're trying to install OS via qemu..."
+echo
+echo "################################################################################"
 echo
 echo "################################################################################"
 echo
