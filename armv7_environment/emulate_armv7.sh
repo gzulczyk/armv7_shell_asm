@@ -1,7 +1,9 @@
 #!/bin/bash
 set -e # Stop when one step doesn't finish properly
 
-ISO_URL="https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/armv7/alpine-standard-3.22.1-armv7.iso" || "https://web.archive.org/web/20250823194237/https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/armv7/alpine-standard-3.22.1-armv7.iso"
+ISO_MAIN="https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/armv7/alpine-standard-3.22.1-armv7.iso"
+ISO_MIRROR="https://web.archive.org/web/20250823194237/https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/armv7/alpine-standard-3.22.1-armv7.iso"
+
 ISO_FILE="alpine.iso"
 ISO_MD5="0cba2a7ba4ce8c1c84fd626071ae6fe4"
 
@@ -36,10 +38,18 @@ echo "QEMU is installed, continuing..."
 
 if [ ! -f "${ISO_FILE}" ]; then
     echo "Downloading Alpine ISO..."
+
+    if curl --head --silent --fail "$ISO_MAIN" > /dev/null; then
+        ISO_URL="$ISO_MAIN"
+    else
+        ISO_URL="$ISO_MIRROR"
+    fi
+
     wget -O "${ISO_FILE}" "${ISO_URL}"
 else
     echo "ISO already exists, skipping download."
 fi
+
 
 CALC_MD5=$(md5 -q "$ISO_FILE")
 
