@@ -1,5 +1,11 @@
+.DS_Store
+
 *.iso
 *.qcow2
 *.gz
 vmlinuz
 alpine*
+
+# Dynamic SHes
+run.sh
+install-alpine.sh
