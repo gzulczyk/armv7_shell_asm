@@ -1136,10 +1136,33 @@ echo ">>> Running automated Alpine setup"
 /usr/sbin/setup-alpine -f /etc/answerfile || {
     echo ">>> setup-alpine failed, dropping to shell"
 }
-echo ">>> Setup finished, starting real init"
-exec /sbin/init
+echo ">>> Setup finished, shutting down in 5s..."
+poweroff
 EOS
 chmod +x "$sysroot/sbin/firstboot.sh"
+
+# ==== Install post-install script into the *new* Alpine root ====
+cat > "$sysroot/etc/local.d/armv7asm.start" <<"EOS"
+#!/bin/sh
+set -e
+
+ip addr add 10.0.2.15/24 dev eth0
+ip link set eth0 up
+ip route add default via 10.0.2.2
+echo "nameserver 1.1.1.1" > /etc/resolv.conf
+
+apk update
+apk add git make binutils
+
+git clone https://github.com/gzulczyk/armv7_shell_asm.git /root/armv7_shell_asm
+cd /root/armv7_shell_asm
+make
+EOS
+chmod +x "$sysroot/etc/local.d/armv7asm.start"
+
+# enable the local service inside the target system
+chroot "$sysroot" rc-update add local default
+
 
 # ==== fix setup-disk to support armv7 bootloader ====
 if [ -f "$sysroot/usr/sbin/setup-disk" ]; then
