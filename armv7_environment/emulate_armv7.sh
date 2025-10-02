@@ -7,6 +7,9 @@ ISO_MIRROR="https://web.archive.org/web/20250823194237/https://dl-cdn.alpinelinu
 ISO_FILE="alpine.iso"
 ISO_MD5="0cba2a7ba4ce8c1c84fd626071ae6fe4"
 
+APKVOL="myoverlay.apkovl.tar.gz"
+
+
 DISK_IMAGE="alpine.qcow2"
 KERNEL="vmlinuz"
 INITRD="initrd.gz"
@@ -71,8 +74,26 @@ if [ ! -f "${KERNEL}" ] || [ ! -f "${INITRD}" ]; then
     echo "Extracting kernel and initrd from ISO..."
     7z e alpine.iso boot/vmlinuz-lts* boot/initramfs-lts*
     mv vmlinuz-lts "${KERNEL}"
-    mv initramfs-lts "${INITRD}"
-else
+    mv initramfs-lts ${INITRD}
+    mkdir initrd-tmp
+    mv ${INITRD} ./initrd-tmp/${INITRD}
+
+    echo "Unpacking initramfs..."
+    cd initrd-tmp
+    # unpack gzip’d cpio
+    gzip -dc "./${INITRD}" | cpio -idmv
+
+    echo "Injecting spoofed init..."
+    cp ../init ./init
+    chmod +x ./init
+
+    rm -rf initrd.gz
+    echo "Repacking initramfs..."
+    find . | cpio -o -H newc | gzip -9 > "../${INITRD}"
+    cd ..
+    rm -rf initrd-tmp
+    echo "Patched initrd ready at ${INITRD}"
+   else
     echo "vmlinuz & initrd already extracted."
 fi
 
@@ -84,7 +105,7 @@ ${QEMU_ARCH} \
   -m 1024 \
   -kernel ${KERNEL} \
   -initrd ${INITRD} \
-  -append "console=ttyAMA0 autoinstall=cdrom:/preseed.txt" \
+  -append "console=ttyAMA0" \
   -drive file=${DISK_IMAGE},if=none,format=qcow2,id=hd0 \
   -device virtio-blk-device,drive=hd0 \
   -drive file=${ISO_FILE},if=none,format=raw,id=cdrom \
