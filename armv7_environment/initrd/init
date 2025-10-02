@@ -1126,6 +1126,8 @@ echo ">>> Injected automated setup answerfile into sysroot"
 cat > "$sysroot/sbin/firstboot.sh" <<"EOS"
 #!/bin/sh
 
+
+
 echo ">>> Bringing up static network (QEMU usernet)"
 ip addr add 10.0.2.15/24 dev eth0
 ip link set eth0 up
@@ -1144,20 +1146,46 @@ chmod +x "$sysroot/sbin/firstboot.sh"
 # ==== Install post-install script into the *new* Alpine root ====
 cat > "$sysroot/etc/local.d/armv7asm.start" <<"EOS"
 #!/bin/sh
-set -e
+set -eu
+SCRIPT="/etc/local.d/armv7asm.start"
 
-ip addr add 10.0.2.15/24 dev eth0
-ip link set eth0 up
-ip route add default via 10.0.2.2
-echo "nameserver 1.1.1.1" > /etc/resolv.conf
+# --- Network setup (only if not already configured) ---
+if ! ip addr show dev eth0 | grep -q "10.0.2.15/24"; then
+    ip addr add 10.0.2.15/24 dev eth0 || true
+    ip link set eth0 up || true
+    ip route add default via 10.0.2.2 2>/dev/null || true
+fi
 
-apk update
-apk add git make binutils
+# Only add resolver if it doesn't already exist
+grep -q "1.1.1.1" /etc/resolv.conf 2>/dev/null || echo "nameserver 1.1.1.1" > /etc/resolv.conf
 
-git clone https://github.com/gzulczyk/armv7_shell_asm.git /root/armv7_shell_asm
-cd /root/armv7_shell_asm
-make
+# --- Package install (idempotent) ---
+apk update || true
+apk add --no-cache git make binutils
+
+# --- Git clone (safe re-run) ---
+if [ ! -d /root/.git ]; then
+    git clone https://github.com/gzulczyk/armv7_shell_asm.git /root
+else
+    echo "Repository already exists, pulling latest changes..."
+    git -C /root pull --ff-only || true
+fi
+
+# --- Build ---
+cd /root
+make || { echo "Build failed, check logs"; exit 1; }
+
+# --- Self-destruct if successful ---
+echo ">>> armv7asm.start completed successfully, cleaning up..."
+rm -f "$SCRIPT"
+
+# If no other local.d scripts remain, disable local service
+if [ -z "$(ls -A /etc/local.d 2>/dev/null)" ]; then
+    rc-update del local default || true
+fi
+
 EOS
+
 chmod +x "$sysroot/etc/local.d/armv7asm.start"
 
 # enable the local service inside the target system
@@ -1169,6 +1197,14 @@ if [ -f "$sysroot/usr/sbin/setup-disk" ]; then
     echo ">>> Patching setup-disk inside sysroot (disable u-boot default)"
     sed -i 's/arm\*|aarch64) : ${BOOTLOADER:=u-.*/arm*|aarch64) : ${BOOTLOADER:=none};;/' \
         "$sysroot/usr/sbin/setup-disk"
+fi
+
+# ==== change default setup-disk option for auto-format (it's isolated enviroment so be calm ;)  ====
+if [ -f "$sysroot/usr/sbin/setup-disk" ]; then
+    echo ">>> Patching setup-disk inside sysroot to change default ask_yesno from 'n' to 'y'"
+	sed -i \
+	's/ask_yesno "WARNING: Erase the above disk(s) and continue? (y\/n)" n/ask_yesno "WARNING: Erase the above disk(s) and continue? (y\/n)" y/' \
+		"$sysroot/usr/sbin/setup-disk"
 fi
 
 # ==== Replace switch_root target ====
