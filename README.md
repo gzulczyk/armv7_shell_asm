@@ -4,6 +4,8 @@ This project builds a minimal shell in **ARMv7 Assembly** for **Linux**.
 It shows a prompt, reads input, forks, and runs commands via `execve`.  
 No libs, just raw syscalls.
 
+![Project showcase](./showcase.gif)
+
 ## Files
 - **`main.s`** – concatenates whole process of that mini-shell, displays prompt, read value, put value into execve and handles error and termination
 - **`display.s`** – print the shell prompt via `sys_write`
@@ -22,3 +24,10 @@ No libs, just raw syscalls.
 - Parent waits for the child process with `wait4` call
 - Print an custom error message to `stderr` from `end.s` file if the command is not found
 
+## Test Environment
+You can find the complete ARM32 testing environment (powered by QEMU magic) right here:
+https://github.com/gzulczyk/armv7_shell_asm/tree/main/armv7_environment
+
+It’s basically a full emulated Linux system for ARMv7 — everything’s already set up so you can test the project in something that pretends to be real hardware (without actually buying one off eBay).
+
+It should work out of the box… emphasis on should :D
