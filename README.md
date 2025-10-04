@@ -28,6 +28,6 @@ No libs, just raw syscalls.
 You can find the complete ARM32 testing environment (powered by QEMU magic) right here:
 https://github.com/gzulczyk/armv7_shell_asm/tree/main/armv7_environment
 
-It’s basically a full emulated Linux system for ARMv7 — everything’s already set up so you can test the project in something that pretends to be real hardware (without actually buying one off eBay).
+It’s basically a full emulated Linux system for ARMv7 - everything’s already set up so you can test the project in something that pretends to be real hardware (without actually buying one off eBay).
 
 It should work out of the box… emphasis on should :D
